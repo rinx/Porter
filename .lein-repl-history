@@ -9,3 +9,5 @@
 (swap! app-state assoc :app/msg "Hello on Clojure in iOS!")
 (quit)
 (start-figwheel "ios")
+reset-autobuild)
+(reset-autobuild)
