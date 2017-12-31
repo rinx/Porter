@@ -1,6 +1,6 @@
 # Porter
 
-Porter is a iOS app built using Re-Natal (ClojureScript and React Native).
+Porter is an iOS app built using Re-Natal (ClojureScript and React Native).
 
 ## License
 

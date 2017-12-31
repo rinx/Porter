@@ -16,7 +16,6 @@
 (def app-registry (.-AppRegistry ReactNative))
 (def view (partial create-element (.-View ReactNative)))
 (def text (partial create-element (.-Text ReactNative)))
-(def image (partial create-element (.-Image ReactNative)))
 (def touchable-highlight (partial create-element (.-TouchableHighlight ReactNative)))
 (def text-input (partial create-element (.-TextInput ReactNative)))
 
@@ -30,6 +29,8 @@
     (let [res (<! (http/post url
                              {:json-params {:text text}}))]
       (alert (str res)))))
+(defn url-post [text]
+  (post "https://posttestserver.com/post.php" text))
 
 (defui AppRoot
   static om/IQuery
@@ -37,19 +38,25 @@
          '[:app/msg])
   Object
   (render [this]
-          (let [{:keys [app/msg]} (om/props this)]
+          (let [{:keys [app/list]} (om/props this)]
             (view {:style {:flexDirection "column" :margin 40 :alignItems "center"}}
+                  (text {:style {:fontSize 30
+                                 :fontWeight "100"
+                                 :marginBottom 20
+                                 :textAlign "center"}} "Please input RSS URL")
                   (text-input {:style {:height 40
                                        :width 200
                                        :borderColor "gray"
-                                       :borderWidth 1}
-                               :onSubmitEditing #(post "https://posttestserver.com/post.php" "test")})
-                  (text {:style {:fontSize 30 :fontWeight "100" :marginBottom 20 :textAlign "center"}} msg)
-                  (image {:source logo-img
-                          :style  {:width 80 :height 80 :marginBottom 30}})
-                  (touchable-highlight {:style   {:backgroundColor "#999" :padding 10 :borderRadius 5}
+                                       :borderWidth 1
+                                       :marginBottom 20}
+                               :onSubmitEditing #(url-post "test")})
+                  (touchable-highlight {:style {:backgroundColor "#999"
+                                                :padding 10
+                                                :borderRadius 5}
                                         :onPress #(alert "HELLO!")}
-                                       (text {:style {:color "white" :textAlign "center" :fontWeight "bold"}} "press me"))))))
+                                       (text {:style {:color "white"
+                                                      :textAlign "center"
+                                                      :fontWeight "bold"}} "POST"))))))
 
 (defonce RootNode (sup/root-node! 1))
 (defonce app-root (om/factory RootNode))
