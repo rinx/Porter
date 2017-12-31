@@ -1,0 +1,11 @@
+(start-figwheel "ios")
+(fig-status)
+(in-ns 'porter.state)
+(swap! app-state "Hello on Clojure in iOS!")
+@app-state
+(swap! app-state {:app/msg "Hello on Clojure in iOS!"})
+(reset-autobuild
+)
+(swap! app-state assoc :app/msg "Hello on Clojure in iOS!")
+(quit)
+(start-figwheel "ios")
