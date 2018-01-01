@@ -11,3 +11,58 @@
 (start-figwheel "ios")
 reset-autobuild)
 (reset-autobuild)
+quit
+(start-figwheel "ios")
+(reset-autobuild)
+quit
+(start-figwheel "ios")
+quit
+(start-figwheel "ios")
+(reset-autobuild)
+quit
+(start-figwheel "ios")
+(require '[tubax.core :as tubax])
+(require '[clojure.zip :as zip])
+(-> (tubax/xml->clj "<rss><content>abc</content></rss>")
+(zip/xml-zip))
+(tubax/xml->clj "<rss><content>abc</content></rss>")
+(clojure.xml/parse "<rss><content>abc</content></rss>")
+(require '[clojure.xml :as xml])
+(-> (tubax/xml->clj "<rss><content>abc</content></rss>")
+(zip/xml-zip))
+(-> (tubax/xml->clj "<rss><content>abc</content></rss>")
+(zip/xml-zip))
+(-> (tubax/xml->clj "<rss><content>abc</content></rss>")
+(zip/xml-zip)
+(zip/down
+)
+(-> (tubax/xml->clj "<rss><content>abc</content></rss>")
+(zip/xml-zip)
+(zip/down)
+(zip/rightmost)
+(zip/node)
+)
+quit
+(start-figwheel "ios")
+(require '[venia.core :as venia])
+(venia/graphql-query {:venia/operation {:operation/type :mutation} :venia/queries [[:createScript {:input {:scriptInput {:title "abc" :body "body"}}}]]})
+(venia/graphql-query {:venia/queries
+[[:allScript
+[:id
+:title
+:body]]]})
+(venia/graphql-query {:venia/queries
+[[:createScript
+{:input
+{:scriptInput
+{:title "title"
+:body "body"}
+}}]
+[:script
+[:title
+:body]]]})
+(venia/graphql-query {:venia/queries [[:createScript {:input {:scriptInput {:title "title" :body "body"}}} [:script [:title :body]]]]})
+(venia/graphql-query {:venia/queries [[:createScript {:input {:scriptInput {:title "title" :body "body"}}} [:script {:title :body}]]]})
+(venia/graphql-query {:venia/queries [[:createScript {:input {:scriptInput {:title "title" :body "body"}}} [:script [:title :body]]]]})
+(venia/graphql-query {:venia/queries [[:createScript {:input {:scriptInput {:title "title" :body "body"}}} [[:script [:title :body]]]]]})
+(str "mutation" (venia/graphql-query {:venia/queries [[:createScript {:input {:scriptInput {:title "title" :body "body"}}} [[:script [:title :body]]]]]}))

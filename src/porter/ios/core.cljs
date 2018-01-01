@@ -1,11 +1,40 @@
 (ns porter.ios.core
   (:require [clojure.string :as string]
+            [clojure.zip :as zip]
             [om.next :as om :refer-macros [defui]]
             [re-natal.support :as sup]
             [porter.state :as state]
             [cljs-http.client :as http]
             [cljs.core.async :as async :refer [<! >!]
-                                       :refer-macros [go]]))
+                                       :refer-macros [go]]
+            [tubax.core :as tubax]
+            [venia.core :as venia]))
+
+(def graphql-endpoint "http://52.193.81.107/graphql")
+
+(def fetch-all-script-query
+  (venia/graphql-query
+    {:venia/queries
+     [[:allScript
+       [:id
+        :title
+        :body
+        :speech_url
+        :updated_at
+        :created_at]]]}))
+(defn script-input-query
+  [title body]
+  (str "mutation"
+    (venia/graphql-query
+      {:venia/queries
+       [[:createScript
+         {:input
+          {:scriptInput
+           {:title title
+            :body body}}}
+         [[:script
+           [:title
+            :body]]]]]})))
 
 (set! js/window.React (js/require "react"))
 (def ReactNative (js/require "react-native"))
@@ -24,25 +53,31 @@
 (defn alert [title]
   (.alert (.-Alert ReactNative) title))
 
-(defn http-get [url]
-  (let [ch (async/chan)]
-    (go
-      (let [res (<! (http/get url))]
-        (>! ch res)))
-    ch))
-
-(defn http-post [url text]
+(defn request-rss-url [url callback]
   (go
-    (let [res (<! (http/post url
-                             {:json-params {:text text}}))]
-      (alert (str res)))))
-(defn url-post [text]
-  (http-post "https://posttestserver.com/post.php" text))
+    (let [res (<! (http/get url))
+          body (:body res)
+          parsed-body (if-not (string/blank? body)
+                        (-> (tubax/xml->clj body)
+                            (zip/xml-zip)
+                            (zip/down)
+                            (zip/down)
+                            (first)
+                            (:content)
+                            (first)
+                            (str)) ; temporarily get title of rss feed
+                        body)]
+      (callback parsed-body))))
+
+(defn graphql-post [url venia-query]
+  (http/post url {:json-params {:query venia-query}})
+  (alert "POSTED!"))
 
 (defn submit-url [this url]
   (when-not (string/blank? url)
     (om/transact! this `[(urls/add ~{:url url})])
-    (alert url)))
+    (request-rss-url url
+      #(graphql-post graphql-endpoint (script-input-query "[FROM iOS App] てすてす" %)))))
 
 (defui AppRoot
   static om/IQuery
