@@ -87,3 +87,19 @@ quit
 (start-figwheel "ios")
 quit
 (start-figwheel "ios")
+quit
+(start-figwheel "ios")
+quit
+(start-figwheel "ios")
+quit
+(start-figwheel "ios")
+quit
+(start-figwheel "ios")
+quit
+(start-figwheel "ios")
+(fig-status)
+(reset-autobuild)
+quit
+(start-figwheel "ios")
+(start-figwheel! "ios")
+(start-figwheel "ios")

@@ -60,9 +60,9 @@
        (swap! state assoc :scripts scripts))}))
 
 (defonce reconciler
-         (om/reconciler
-           {:state        app-state
-            :parser       (om/parser {:read read
-                                      :mutate mutate})
-            :root-render  sup/root-render
-            :root-unmount sup/root-unmount}))
+  (om/reconciler
+    {:state app-state
+     :parser (om/parser {:read read
+                         :mutate mutate})
+     :root-render sup/root-render
+     :root-unmount sup/root-unmount}))

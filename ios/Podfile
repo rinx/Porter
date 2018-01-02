@@ -1,0 +1,5 @@
+platform :ios, '8.0'
+target 'Porter' do
+  use_frameworks!
+  pod 'RNAudioStreaming', :path => '../node_modules/react-native-audio-streaming'
+end

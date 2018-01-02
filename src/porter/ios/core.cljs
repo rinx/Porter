@@ -39,6 +39,7 @@
 
 (set! js/window.React (js/require "react"))
 (def ReactNative (js/require "react-native"))
+(def ReactNativeAudioStreaming (js/require "react-native-audio-streaming"))
 
 (defn create-element [rn-comp opts & children]
   (apply js/React.createElement rn-comp (clj->js opts) children))
@@ -50,6 +51,12 @@
 (def text-input (partial create-element (.-TextInput ReactNative)))
 (def flat-list (partial create-element (.-FlatList ReactNative)))
 (def list-item (partial create-element (.-ListItem ReactNative)))
+
+(def AudioStreaming (.-ReactNativeAudioStreaming ReactNativeAudioStreaming))
+(def player-item (partial create-element (.-Player ReactNativeAudioStreaming)))
+
+(defn play-stream [url]
+  (.play AudioStreaming url (clj->js {:showIniOSMediaCenter true})))
 
 (def logo-img (js/require "./images/cljs.png"))
 
@@ -80,7 +87,7 @@
     (let [res (<! (graphql-post graphql-endpoint
                                 fetch-all-script-query))
           scripts (get-in res [:body :data :allScript])]
-      (om/transact! component `[(scripts/update ~{:scripts scripts})]))))
+      (om/transact! component `[(scripts/update ~{:scripts scripts}) :app/scripts]))))
 
 (defn post-new-script [title body]
   (graphql-post graphql-endpoint
@@ -162,7 +169,7 @@
                                                                         :padding 10
                                                                         :borderRadius 5
                                                                         :marginBottom 10}
-                                                                :onPress #(update-all-script this)}
+                                                                :onPress #(play-stream (:speech_url item))}
                                                                (text {:style {:color "white"
                                                                               :textAlign "center"
                                                                               :fontWeight "bold"}}

@@ -12,11 +12,20 @@
   "platforms": {
     "ios": {
       "host": "localhost",
-      "modules": []
+      "modules": [
+        "react",
+        "react-native",
+        "react-native-audio-streaming",
+        "./images/cljs.png"
+      ]
     },
     "android": {
       "host": "localhost",
-      "modules": []
+      "modules": [
+        "react",
+        "react-native",
+        "./images/cljs.png"
+      ]
     }
   },
   "autoRequire": false
