@@ -70,22 +70,34 @@
       (callback parsed-body))))
 
 (defn graphql-post [url venia-query]
-  (http/post url {:json-params {:query venia-query}})
+  (http/post url {:json-params {:query venia-query}}))
+
+(defn fetch-all-script []
+  (graphql-post graphql-endpoint
+                fetch-all-script-query))
+
+(defn post-new-script [title body]
+  (graphql-post graphql-endpoint
+                (script-input-query title body))
   (alert "POSTED!"))
 
 (defn submit-url [this url]
   (when-not (string/blank? url)
     (om/transact! this `[(urls/add ~{:url url})])
     (request-rss-url url
-      #(graphql-post graphql-endpoint (script-input-query "[FROM iOS App] てすてす" %)))))
+      #(post-new-script "[FROM iOS App] てすてす" %))))
+
+
+
 
 (defui AppRoot
   static om/IQuery
   (query [this]
-         '[:app/msg])
+         '[:urls])
   Object
   (render [this]
           (let [{:keys [urls]} (om/props this)
+                hidden-input-rss-url (atom "")
                 hidden-input (atom "")]
             (view {:style {:flexDirection "column" :margin 40 :alignItems "center"}}
                   (text {:style {:fontSize 30
@@ -97,12 +109,30 @@
                                        :borderColor "gray"
                                        :borderWidth 1
                                        :marginBottom 20}
-                               :onChangeText #(reset! hidden-input %)
-                               :onSubmitEditing #(submit-url this @hidden-input)})
+                               :onChangeText #(reset! hidden-input-rss-url %)
+                               :onSubmitEditing #(submit-url this @hidden-input-rss-url)})
                   (touchable-highlight {:style {:backgroundColor "#999"
                                                 :padding 10
                                                 :borderRadius 5}
-                                        :onPress #(submit-url this @hidden-input)}
+                                        :onPress #(submit-url this @hidden-input-rss-url)}
+                                       (text {:style {:color "white"
+                                                      :textAlign "center"
+                                                      :fontWeight "bold"}} "register"))
+                  (text {:style {:fontSize 30
+                                 :fontWeight "100"
+                                 :marginBottom 20
+                                 :textAlign "center"}} "Please input body")
+                  (text-input {:style {:height 40
+                                       :width 200
+                                       :borderColor "gray"
+                                       :borderWidth 1
+                                       :marginBottom 20}
+                               :onChangeText #(reset! hidden-input %)
+                               :onSubmitEditing #(post-new-script "[From iOS APP]" @hidden-input)})
+                  (touchable-highlight {:style {:backgroundColor "#999"
+                                                :padding 10
+                                                :borderRadius 5}
+                                        :onPress #(post-new-script "[From iOS App]" @hidden-input)}
                                        (text {:style {:color "white"
                                                       :textAlign "center"
                                                       :fontWeight "bold"}} "register"))))))
