@@ -2,6 +2,7 @@
   (:require [clojure.string :as string]
             [clojure.zip :as zip]
             [om.next :as om :refer-macros [defui]]
+            [reagent.core :as reagent]
             [re-natal.support :as sup]
             [porter.state :as state]
             [cljs-http.client :as http]
@@ -47,6 +48,8 @@
 (def text (partial create-element (.-Text ReactNative)))
 (def touchable-highlight (partial create-element (.-TouchableHighlight ReactNative)))
 (def text-input (partial create-element (.-TextInput ReactNative)))
+(def flat-list (partial create-element (.-FlatList ReactNative)))
+(def list-item (partial create-element (.-ListItem ReactNative)))
 
 (def logo-img (js/require "./images/cljs.png"))
 
@@ -72,70 +75,101 @@
 (defn graphql-post [url venia-query]
   (http/post url {:json-params {:query venia-query}}))
 
-(defn fetch-all-script []
-  (graphql-post graphql-endpoint
-                fetch-all-script-query))
+(defn update-all-script [component]
+  (go
+    (let [res (<! (graphql-post graphql-endpoint
+                                fetch-all-script-query))
+          scripts (get-in res [:body :data :allScript])]
+      (om/transact! component `[(scripts/update ~{:scripts scripts})]))))
 
 (defn post-new-script [title body]
   (graphql-post graphql-endpoint
                 (script-input-query title body))
   (alert "POSTED!"))
 
-(defn submit-url [this url]
+(defn submit-url [component url]
   (when-not (string/blank? url)
-    (om/transact! this `[(urls/add ~{:url url})])
+    (om/transact! component `[(urls/add ~{:url url})])
     (request-rss-url url
       #(post-new-script "[FROM iOS App] てすてす" %))))
-
-
-
 
 (defui AppRoot
   static om/IQuery
   (query [this]
-         '[:urls])
+    [{:scripts [:id :title :speech_url]}])
   Object
   (render [this]
-          (let [{:keys [urls]} (om/props this)
-                hidden-input-rss-url (atom "")
-                hidden-input (atom "")]
-            (view {:style {:flexDirection "column" :margin 40 :alignItems "center"}}
-                  (text {:style {:fontSize 30
-                                 :fontWeight "100"
-                                 :marginBottom 20
-                                 :textAlign "center"}} "Please input RSS URL")
-                  (text-input {:style {:height 40
-                                       :width 200
-                                       :borderColor "gray"
-                                       :borderWidth 1
-                                       :marginBottom 20}
-                               :onChangeText #(reset! hidden-input-rss-url %)
-                               :onSubmitEditing #(submit-url this @hidden-input-rss-url)})
-                  (touchable-highlight {:style {:backgroundColor "#999"
-                                                :padding 10
-                                                :borderRadius 5}
-                                        :onPress #(submit-url this @hidden-input-rss-url)}
-                                       (text {:style {:color "white"
-                                                      :textAlign "center"
-                                                      :fontWeight "bold"}} "register"))
-                  (text {:style {:fontSize 30
-                                 :fontWeight "100"
-                                 :marginBottom 20
-                                 :textAlign "center"}} "Please input body")
-                  (text-input {:style {:height 40
-                                       :width 200
-                                       :borderColor "gray"
-                                       :borderWidth 1
-                                       :marginBottom 20}
-                               :onChangeText #(reset! hidden-input %)
-                               :onSubmitEditing #(post-new-script "[From iOS APP]" @hidden-input)})
-                  (touchable-highlight {:style {:backgroundColor "#999"
-                                                :padding 10
-                                                :borderRadius 5}
-                                        :onPress #(post-new-script "[From iOS App]" @hidden-input)}
-                                       (text {:style {:color "white"
-                                                      :textAlign "center"
-                                                      :fontWeight "bold"}} "register"))))))
+    (let [props (om/props this)
+          scripts (:scripts props)
+          hidden-input-rss-url (atom "")
+          hidden-input (atom "")]
+      (view {:style {:flexDirection "column" :margin 40 :alignItems "center"}}
+            (text {:style {:fontSize 30
+                           :fontWeight "100"
+                           :marginBottom 20
+                           :textAlign "center"}} "Please input RSS URL")
+            (text-input {:style {:height 40
+                                 :width 200
+                                 :borderColor "gray"
+                                 :borderWidth 1
+                                 :marginBottom 20}
+                         :onChangeText #(reset! hidden-input-rss-url %)
+                         :onSubmitEditing #(submit-url this @hidden-input-rss-url)})
+            (touchable-highlight {:style {:backgroundColor "#999"
+                                          :padding 10
+                                          :borderRadius 5
+                                          :marginBottom 20}
+                                  :onPress #(submit-url this @hidden-input-rss-url)}
+                                 (text {:style {:color "white"
+                                                :textAlign "center"
+                                                :fontWeight "bold"}} "register"))
+            (text {:style {:fontSize 30
+                           :fontWeight "100"
+                           :marginBottom 20
+                           :textAlign "center"}} "Please input body")
+            (text-input {:style {:height 40
+                                 :width 200
+                                 :borderColor "gray"
+                                 :borderWidth 1
+                                 :marginBottom 20}
+                         :onChangeText #(reset! hidden-input %)
+                         :onSubmitEditing #(post-new-script "[From iOS APP]" @hidden-input)})
+            (touchable-highlight {:style {:backgroundColor "#999"
+                                          :padding 10
+                                          :borderRadius 5
+                                          :marginBottom 20}
+                                  :onPress #(post-new-script "[From iOS App]" @hidden-input)}
+                                 (text {:style {:color "white"
+                                                :textAlign "center"
+                                                :fontWeight "bold"}} "register"))
+            (touchable-highlight {:style {:backgroundColor "#999"
+                                          :padding 10
+                                          :borderRadius 5
+                                          :marginBottom 20}
+                                  :onPress #(update-all-script this)}
+                                 (text {:style {:color "white"
+                                                :textAlign "center"
+                                                :fontWeight "bold"}} "update"))
+            (flat-list {:data (clj->js scripts)
+                        :keyExtractor (fn [item index]
+                                        (:id (js->clj item :keywordize-keys true)))
+                        :renderItem (fn [item-info-js]
+                                      (let [item-info (js->clj item-info-js
+                                                               :keywordize-keys true)
+                                            {:keys [item index]} item-info]
+                                        (reagent/as-element
+                                          (touchable-highlight {:style {:backgroundColor "#999"
+                                                                        :padding 10
+                                                                        :borderRadius 5
+                                                                        :marginBottom 10}
+                                                                :onPress #(update-all-script this)}
+                                                               (text {:style {:color "white"
+                                                                              :textAlign "center"
+                                                                              :fontWeight "bold"}}
+                                                                     (str (:id item)
+                                                                          ": "
+                                                                          (:title item)))))))})))))
+
 
 (defonce RootNode (sup/root-node! 1))
 (defonce app-root (om/factory RootNode))

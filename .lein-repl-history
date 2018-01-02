@@ -68,3 +68,22 @@ quit
 (str "mutation" (venia/graphql-query {:venia/queries [[:createScript {:input {:scriptInput {:title "title" :body "body"}}} [[:script [:title :body]]]]]}))
 quit
 (start-figwheel "ios")
+quit
+(start-figwheel "ios")
+quit
+(start-figwheel "ios")
+(partial conj [a])
+(partial conj [:a])
+((partial conj [:a]) :b)
+(partial conj [:a] :b)
+(reset-autobuild)
+quit
+(start-figwheel "ios")
+(in-ns 'porter.ios.core)
+(load 'porter.ios.core)
+(fetch-all-script)
+(in-ns 'cljs.user)
+quit
+(start-figwheel "ios")
+quit
+(start-figwheel "ios")

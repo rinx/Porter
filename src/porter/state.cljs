@@ -3,7 +3,7 @@
             [re-natal.support :as sup]))
 
 (defonce app-state (atom {:urls []
-                          :scripts [{:id 1 :title "test" :speech_url "http://abc"}]}))
+                          :scripts []}))
 
 (defmulti read om/dispatch)
 
@@ -46,10 +46,18 @@
   (let [state (:state env)
         scripts (:scripts @state)
         id (gen-id scripts)
-        new-script (assoc params :id id)])
-  {:action
-   (fn []
-     (swap! state udpate :scripts conj new-script))})
+        new-script (assoc params :id id)]
+    {:action
+     (fn []
+       (swap! state update :scripts conj new-script))}))
+
+(defmethod mutate 'scripts/update
+  [env key params]
+  (let [state (:state env)
+        scripts (:scripts params)]
+    {:action
+     (fn []
+       (swap! state assoc :scripts scripts))}))
 
 (defonce reconciler
          (om/reconciler
