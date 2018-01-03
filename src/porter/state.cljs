@@ -4,6 +4,7 @@
 
 (defonce app-state (atom {:app/urls []
                           :app/scripts [{:id 1 :title "人間失格" :speech_url "https://speeches-production.s3.ap-northeast-1.amazonaws.com/script_16.mp3"}]}))
+
 (defmulti read om/dispatch)
 
 (defmethod read :app/urls

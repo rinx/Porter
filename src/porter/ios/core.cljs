@@ -112,21 +112,25 @@
                            :fontWeight "100"
                            :marginBottom 20
                            :textAlign "center"}} "Please input RSS URL")
-            (text-input {:style {:height 40
-                                 :width 200
-                                 :borderColor "gray"
-                                 :borderWidth 1
-                                 :marginBottom 20}
-                         :onChangeText #(reset! hidden-input %)
-                         :onSubmitEditing #(submit-url this @hidden-input)})
-            (touchable-highlight {:style {:backgroundColor "#999"
-                                          :padding 10
-                                          :borderRadius 5
-                                          :marginBottom 20}
-                                  :onPress #(submit-url this @hidden-input)}
-                                 (text {:style {:color "white"
-                                                :textAlign "center"
-                                                :fontWeight "bold"}} "register"))))))
+            (view {:style {:flexDirection "row"
+                           :marginLeft 20
+                           :marginRight 20
+                           :marginBottom 20}}
+              (text-input {:style {:flex 3
+                                   :borderColor "gray"
+                                   :borderWidth 1
+                                   :borderRadius 5
+                                   :marginRight 10}
+                           :onChangeText #(reset! hidden-input %)
+                           :onSubmitEditing #(submit-url this @hidden-input)})
+              (touchable-highlight {:style {:flex 1
+                                            :backgroundColor "#999"
+                                            :padding 10
+                                            :borderRadius 5}
+                                    :onPress #(submit-url this @hidden-input)}
+                                   (text {:style {:color "white"
+                                                  :textAlign "center"
+                                                  :fontWeight "bold"}} "register")))))))
 
 (def rss-input-page (om/factory RSSInputPage))
 
@@ -139,60 +143,59 @@
                            :fontWeight "100"
                            :marginBottom 20
                            :textAlign "center"}} "Please input body")
-            (text-input {:style {:height 40
-                                 :width 200
-                                 :borderColor "gray"
-                                 :borderWidth 1
-                                 :marginBottom 20}
-                         :onChangeText #(reset! hidden-input %)
-                         :onSubmitEditing #(post-new-script "[From iOS APP]" @hidden-input)})
-            (touchable-highlight {:style {:backgroundColor "#999"
-                                          :padding 10
-                                          :borderRadius 5
-                                          :marginBottom 20}
-                                  :onPress #(post-new-script "[From iOS App]" @hidden-input)}
-                                 (text {:style {:color "white"
-                                                :textAlign "center"
-                                                :fontWeight "bold"}} "register"))))))
+            (view {:style {:flexDirection "row"
+                           :marginLeft 20
+                           :marginRight 20
+                           :marginBottom 20}}
+              (text-input {:style {:flex 3
+                                   :borderColor "gray"
+                                   :borderWidth 1
+                                   :borderRadius 5
+                                   :marginRight 10}
+                           :onChangeText #(reset! hidden-input %)
+                           :onSubmitEditing #(submit-url this @hidden-input)})
+              (touchable-highlight {:style {:flex 1
+                                            :backgroundColor "#999"
+                                            :padding 10
+                                            :borderRadius 5}
+                                    :onPress #(submit-url this @hidden-input)}
+                                   (text {:style {:color "white"
+                                                  :textAlign "center"
+                                                  :fontWeight "bold"}} "register")))))))
 
 (def text-input-page (om/factory TextInputPage))
 
-(defui ScriptListPage
+(defui ScriptItem
   static om/IQuery
   (query [this]
     [:id :title :speech_url])
   Object
   (render [this]
+     (let [props (om/props this)]
+       (touchable-highlight {:style {:backgroundColor "#999"
+                                     :padding 10
+                                     :borderRadius 5
+                                     :marginBottom 10}
+                             :onPress #(play-stream (:speech_url props))}
+                            (text {:style {:color "white"
+                                           :textAlign "center"
+                                           :fontWeight "bold"}}
+                                  (str (:id props)
+                                       ": "
+                                       (:title props)))))))
+
+(def script-item (om/factory ScriptItem))
+
+(defui ScriptListPage
+  static om/IQuery
+  (query [this]
+    [(om/get-query ScriptItem)])
+  Object
+  (render [this]
     (let [props (om/props this)
           scripts (:app/scripts props)]
-      (view {:style {:flexDirection "column" :margin 0 :alignItems "center"}}
-            (touchable-highlight {:style {:backgroundColor "#999"
-                                          :padding 10
-                                          :borderRadius 5
-                                          :marginBottom 20}
-                                  :onPress #(update-all-script this)}
-                                 (text {:style {:color "white"
-                                                :textAlign "center"
-                                                :fontWeight "bold"}} "update"))
-            (flat-list {:data (clj->js scripts)
-                        :keyExtractor (fn [item index]
-                                        (:id (js->clj item :keywordize-keys true)))
-                        :renderItem (fn [item-info-js]
-                                      (let [item-info (js->clj item-info-js
-                                                               :keywordize-keys true)
-                                            {:keys [item index]} item-info]
-                                        (reagent/as-element
-                                          (touchable-highlight {:style {:backgroundColor "#999"
-                                                                        :padding 10
-                                                                        :borderRadius 5
-                                                                        :marginBottom 10}
-                                                                :onPress #(play-stream (:speech_url item))}
-                                                               (text {:style {:color "white"
-                                                                              :textAlign "center"
-                                                                              :fontWeight "bold"}}
-                                                                     (str (:id item)
-                                                                          ": "
-                                                                          (:title item)))))))})))))
+      (apply view {:style {:flexDirection "column" :margin 0 :alignItems "center"}}
+             (map script-item scripts)))))
 
 (def script-list-page (om/factory ScriptListPage))
 
@@ -203,21 +206,21 @@
       [{:app/scripts script-subquery}]))
   Object
   (render [this]
-    (let [props (om/props this)]
+    (let [props (om/props this)
+          nowplaying (:app/nowplaying props)]
       (view {:style {:flex 1}}
             (scrollable-tab-view {:style {:marginTop 20}
                                   :onChangeTab #(update-all-script this)}
                                  (view {:paddingTop 20
-                                        :tabLabel "TEXT"}
+                                        :tabLabel "RSS"}
                                        (rss-input-page))
                                  (view {:paddingTop 20
-                                        :tabLabel "RSS"}
+                                        :tabLabel "TEXT"}
                                        (text-input-page))
                                  (view {:paddingTop 20
                                         :tabLabel "LIST"}
                                        (script-list-page props)))
-            (player-item {:url "https://speeches-production.s3.ap-northeast-1.amazonaws.com/script_16.mp3"
-                          :style {:marginBottom 20}})))))
+            (player-item {:url (:speech_url (first (:app/scripts props)))})))))
 
 (defonce RootNode (sup/root-node! 1))
 (defonce app-root (om/factory RootNode))
