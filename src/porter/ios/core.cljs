@@ -2,7 +2,6 @@
   (:require [clojure.string :as string]
             [clojure.zip :as zip]
             [om.next :as om :refer-macros [defui]]
-            [reagent.core :as reagent]
             [re-natal.support :as sup]
             [porter.state :as state]
             [cljs-http.client :as http]

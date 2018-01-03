@@ -6,7 +6,6 @@
             :dependencies [[org.clojure/clojure "1.9.0-alpha16"]
                            [org.clojure/clojurescript "1.9.542"]
                            [org.omcljs/om "1.0.0-beta1" :exclusions [cljsjs/react cljsjs/react-dom]]
-                           [reagent "0.8.0-alpha2"]
                            [org.clojure/core.async "0.3.465"]
                            [cljs-http "0.1.44"]
                            [funcool/tubax "0.2.0"]
