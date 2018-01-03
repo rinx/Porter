@@ -9,6 +9,8 @@ Porter is an iOS app built using Re-Natal (ClojureScript and React Native).
     $ npm install
     $ cd node_modules/react-native-audio-streaming && pod install
 
+Install dependencies for react-native-audio-streaming following the [document](https://github.com/tlenclos/react-native-audio-streaming#next-installation-steps-for-ios-choose-one-of-three-options-below)
+
 ### Run on simulator / device
 
     $ re-natal use-ios-device simulator (real)
