@@ -37,9 +37,8 @@
                                                       :compiler     {:output-to     "target/android/not-used.js"
                                                                      :main          "env.android.main"
                                                                      :output-dir    "target/android"
-                                                                     :optimizations :none}}]}}})
-#_($DEV_PROFILES$
-                             :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
+                                                                     :optimizations :none}}]}
+                             :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}
                        :prod {:cljsbuild {:builds [
                                                    {:id           "ios"
                                                     :source-paths ["src" "env/prod"]
@@ -58,8 +57,7 @@
                                                                    :static-fns    true
                                                                    :optimize-constants true
                                                                    :optimizations :simple
-                                                                   :closure-defines {"goog.DEBUG" false}}}]}})
-#_($PROD_PROFILES$
+                                                                   :closure-defines {"goog.DEBUG" false}}}]}}
                        :advanced {:dependencies [[react-native-externs "0.1.0"]]
                                   :cljsbuild {:builds []
                                                    {:id           "ios"
@@ -79,7 +77,4 @@
                                                                    :static-fns    true
                                                                    :optimize-constants true
                                                                    :optimizations :advanced
-                                                                   :closure-defines {"goog.DEBUG" false}}}}})
-#_($ADVANCED_PROFILES$)
-                                                  
-                      
+                                                                   :closure-defines {"goog.DEBUG" false}}}}}})
