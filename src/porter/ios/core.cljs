@@ -39,6 +39,7 @@
 
 (set! js/window.React (js/require "react"))
 (def ReactNative (js/require "react-native"))
+(def ReactNativeScrollableTabView (js/require "react-native-scrollable-tab-view"))
 (def ReactNativeAudioStreaming (js/require "react-native-audio-streaming"))
 
 (defn create-element [rn-comp opts & children]
@@ -51,6 +52,8 @@
 (def text-input (partial create-element (.-TextInput ReactNative)))
 (def flat-list (partial create-element (.-FlatList ReactNative)))
 (def list-item (partial create-element (.-ListItem ReactNative)))
+
+(def scrollable-tab-view (partial create-element ReactNativeScrollableTabView))
 
 (def AudioStreaming (.-ReactNativeAudioStreaming ReactNativeAudioStreaming))
 (def player-item (partial create-element (.-Player ReactNativeAudioStreaming)))
@@ -100,17 +103,11 @@
     (request-rss-url url
       #(post-new-script "[FROM iOS App] てすてす" %))))
 
-(defui AppRoot
-  static om/IQuery
-  (query [this]
-    [{:scripts [:id :title :speech_url]}])
+(defui RSSInputPage
   Object
   (render [this]
-    (let [props (om/props this)
-          scripts (:scripts props)
-          hidden-input-rss-url (atom "")
-          hidden-input (atom "")]
-      (view {:style {:flexDirection "column" :margin 40 :alignItems "center"}}
+    (let [hidden-input (atom "")]
+      (view {:style {:flexDirection "column" :margin 0 :alignItems "center"}}
             (text {:style {:fontSize 30
                            :fontWeight "100"
                            :marginBottom 20
@@ -120,16 +117,24 @@
                                  :borderColor "gray"
                                  :borderWidth 1
                                  :marginBottom 20}
-                         :onChangeText #(reset! hidden-input-rss-url %)
-                         :onSubmitEditing #(submit-url this @hidden-input-rss-url)})
+                         :onChangeText #(reset! hidden-input %)
+                         :onSubmitEditing #(submit-url this @hidden-input)})
             (touchable-highlight {:style {:backgroundColor "#999"
                                           :padding 10
                                           :borderRadius 5
                                           :marginBottom 20}
-                                  :onPress #(submit-url this @hidden-input-rss-url)}
+                                  :onPress #(submit-url this @hidden-input)}
                                  (text {:style {:color "white"
                                                 :textAlign "center"
-                                                :fontWeight "bold"}} "register"))
+                                                :fontWeight "bold"}} "register"))))))
+
+(def rss-input-page (om/factory RSSInputPage))
+
+(defui TextInputPage
+  Object
+  (render [this]
+    (let [hidden-input (atom "")]
+      (view {:style {:flexDirection "column" :margin 0 :alignItems "center"}}
             (text {:style {:fontSize 30
                            :fontWeight "100"
                            :marginBottom 20
@@ -148,7 +153,19 @@
                                   :onPress #(post-new-script "[From iOS App]" @hidden-input)}
                                  (text {:style {:color "white"
                                                 :textAlign "center"
-                                                :fontWeight "bold"}} "register"))
+                                                :fontWeight "bold"}} "register"))))))
+
+(def text-input-page (om/factory TextInputPage))
+
+(defui ScriptListPage
+  static om/IQuery
+  (query [this]
+    [:id :title :speech_url])
+  Object
+  (render [this]
+    (let [props (om/props this)
+          scripts (:app/scripts props)]
+      (view {:style {:flexDirection "column" :margin 0 :alignItems "center"}}
             (touchable-highlight {:style {:backgroundColor "#999"
                                           :padding 10
                                           :borderRadius 5
@@ -177,6 +194,30 @@
                                                                           ": "
                                                                           (:title item)))))))})))))
 
+(def script-list-page (om/factory ScriptListPage))
+
+(defui AppRoot
+  static om/IQuery
+  (query [this]
+    (let [script-subquery (om/get-query ScriptListPage)]
+      [{:app/scripts script-subquery}]))
+  Object
+  (render [this]
+    (let [props (om/props this)]
+      (view {:style {:flex 1}}
+            (scrollable-tab-view {:style {:marginTop 20}
+                                  :onChangeTab #(update-all-script this)}
+                                 (view {:paddingTop 20
+                                        :tabLabel "TEXT"}
+                                       (rss-input-page))
+                                 (view {:paddingTop 20
+                                        :tabLabel "RSS"}
+                                       (text-input-page))
+                                 (view {:paddingTop 20
+                                        :tabLabel "LIST"}
+                                       (script-list-page props)))
+            (player-item {:url "https://speeches-production.s3.ap-northeast-1.amazonaws.com/script_16.mp3"
+                          :style {:marginBottom 20}})))))
 
 (defonce RootNode (sup/root-node! 1))
 (defonce app-root (om/factory RootNode))

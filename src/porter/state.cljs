@@ -2,20 +2,19 @@
   (:require [om.next :as om]
             [re-natal.support :as sup]))
 
-(defonce app-state (atom {:urls []
-                          :scripts []}))
-
+(defonce app-state (atom {:app/urls []
+                          :app/scripts [{:id 1 :title "人間失格" :speech_url "https://speeches-production.s3.ap-northeast-1.amazonaws.com/script_16.mp3"}]}))
 (defmulti read om/dispatch)
 
-(defmethod read :urls
+(defmethod read :app/urls
   [env key params]
   (let [state (:state env)]
-    {:value (:urls @state)}))
+    {:value (:app/urls @state)}))
 
-(defmethod read :scripts
+(defmethod read :app/scripts
   [env key params]
   (let [state (:state env)]
-    {:value (:scripts @state)}))
+    {:value (:app/scripts @state)}))
 
 (defmethod read :default
   [{:keys [state]} k _]
@@ -39,17 +38,17 @@
         new-url (assoc params :id id)]
     {:action
      (fn []
-       (swap! state update :urls conj new-url))}))
+       (swap! state update :app/urls conj new-url))}))
 
 (defmethod mutate 'scripts/add
   [env key params]
   (let [state (:state env)
-        scripts (:scripts @state)
+        scripts (:app/scripts @state)
         id (gen-id scripts)
         new-script (assoc params :id id)]
     {:action
      (fn []
-       (swap! state update :scripts conj new-script))}))
+       (swap! state update :app/scripts conj new-script))}))
 
 (defmethod mutate 'scripts/update
   [env key params]
@@ -57,7 +56,7 @@
         scripts (:scripts params)]
     {:action
      (fn []
-       (swap! state assoc :scripts scripts))}))
+       (swap! state assoc :app/scripts scripts))}))
 
 (defonce reconciler
   (om/reconciler

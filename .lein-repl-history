@@ -103,3 +103,5 @@ quit
 (start-figwheel "ios")
 (start-figwheel! "ios")
 (start-figwheel "ios")
+quit
+(start-figwheel "ios")
