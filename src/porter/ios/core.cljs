@@ -13,7 +13,7 @@
 (set! js/window.React (js/require "react"))
 
 (defn request-rss-url [url callback]
-  (take! (http/get-parse-rss) #(callback %)))
+  (take! (http/get-parse-rss url) #(callback %)))
 
 (defn update-all-script [component]
   (take! (http/fetch-all-script)

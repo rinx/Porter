@@ -136,3 +136,4 @@ quit
 (reset-autobuild)
 (start-figwheel "ios")
 (clean-builds)
+quit
