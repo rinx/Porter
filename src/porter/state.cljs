@@ -1,9 +1,16 @@
 (ns porter.state
   (:require [om.next :as om]
-            [re-natal.support :as sup]))
+            [re-natal.support :as sup]
+            [cljs.core.async :as async
+                             :refer [take!]]
+            [porter.http :as http]))
 
-(defonce app-state (atom {:app/urls []
-                          :app/scripts [{:id 1 :title "人間失格" :speech_url "https://speeches-production.s3.ap-northeast-1.amazonaws.com/script_16.mp3"}]}))
+(defonce app-state
+  (let [atm (atom {:app/urls []
+                   :app/scripts []})]
+    (take! (http/fetch-all-script)
+      #(swap! atm assoc :app/scripts %))
+    atm))
 
 (defmulti read om/dispatch)
 

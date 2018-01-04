@@ -106,3 +106,33 @@ quit
 quit
 (start-figwheel "ios")
 quit
+(start-figwheel "ios")
+quit
+(start-figwheel "ios")
+quit
+(start-figwheel "ios")
+quti
+quit
+(start-figwheel "ios")
+quit
+(start-figwheel "ios")
+quit
+(start-figwheel "ios")
+(in-ns 'porter.state)
+(def parser (om/parser {:read read :mutate mutate}))
+@app-state
+(parser {:state app-state} '[(scripts/update {:scripts [{:id 2 :title "abc" :speech_url "abc"} {:id 3 :title "ABC" :speech_url "ABC"}]}])
+(parser {:state app-state} '[(scripts/update {:scripts [{:id 2 :title "abc" :speech_url "abc"} {:id 3 :title "ABC" :speech_url "ABC"}]})])
+(parset {:state app-state} '[:app/scripts])
+(parser {:state app-state} '[:app/scripts])
+(parser {:state app-state} '[{:app/scripts [:id :title :speech_url]})
+(parser {:state app-state} '[{:app/scripts [:id :title :speech_url]}])
+(parser {:state app-state} '[{:app/scripts [:id :title]}])
+(parser {:state app-state} '[(scripts/update {:scripts [{:id 2 :title "abc" :speech_url "abc"} {:id 3 :title "ABC" :speech_url "ABC"}]}) :app/scripts])
+quit
+(start-figwheel "ios")
+quit
+(start-figwheel "ios")
+(reset-autobuild)
+(start-figwheel "ios")
+(clean-builds)
