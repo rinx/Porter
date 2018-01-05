@@ -139,3 +139,6 @@ quit
 quit
 (start-figwheel "ios")
 (apply str '("abc" "def"))
+(reset-autobuild)
+quit
+(start-figwheel "ios")
