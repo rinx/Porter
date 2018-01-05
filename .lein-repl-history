@@ -142,3 +142,16 @@ quit
 (reset-autobuild)
 quit
 (start-figwheel "ios")
+quit
+(start-figwheel "ios")
+(in-ns 'porter.state)
+@app-state
+(swap! app-state assoc :app/scripts [{:id 1 :title "test" :speech_url "https://speeches-production.s3.ap-northeast-1.amazonaws.com/script_27.mp3"}])
+(swap! app-state assoc :app/scripts [{:id 1 :title "abc" :speech_url "https://speeches-production.s3.ap-northeast-1.amazonaws.com/script_27.mp3"}])
+@app-state
+(swap! app-state assoc :app/urls [])
+(swap! app-state assoc :app/scripts [{:id 1 :title "abc" :speech_url "https://speeches-production.s3.ap-northeast-1.amazonaws.com/script_27.mp3"}])
+app-state
+(swap! app-state assoc :app/scripts [{:id 1 :title "abc" :speech_url "https://speeches-production.s3.ap-northeast-1.amazonaws.com/script_27.mp3"}])
+app-state
+quit

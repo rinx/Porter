@@ -9,7 +9,11 @@
   (let [atm (atom {:app/urls []
                    :app/scripts []})]
     (take! (http/fetch-all-script)
-      #(swap! atm assoc :app/scripts %))
+      (fn [scripts]
+        (->> scripts
+          (sort-by :id)
+          (reverse)
+          (swap! atm assoc :app/scripts))))
     atm))
 
 (defmulti read om/dispatch)
@@ -44,7 +48,8 @@
         urls (:urls @state)
         id (gen-id urls)
         new-url (assoc params :id id)]
-    {:action
+    {:value  {:keys [:app/urls]}
+     :action
      (fn []
        (swap! state update :app/urls conj new-url))}))
 
@@ -54,7 +59,8 @@
         scripts (:app/scripts @state)
         id (gen-id scripts)
         new-script (assoc params :id id)]
-    {:action
+    {:value  {:keys [:app/scripts]}
+     :action
      (fn []
        (swap! state update :app/scripts conj new-script))}))
 
@@ -62,7 +68,8 @@
   [env key params]
   (let [state (:state env)
         scripts (:scripts params)]
-    {:action
+    {:value  {:keys [:app/scripts]}
+     :action
      (fn []
        (swap! state assoc :app/scripts scripts))}))
 

@@ -12,10 +12,10 @@
 (defn request-rss-url [url callback]
   (take! (http/get-parse-rss url) #(callback %)))
 
-(defn update-all-script [component]
+(defn update-all-script []
   (take! (http/fetch-all-script)
     (fn [scripts]
-      (om/transact! component `[(scripts/update ~{:scripts scripts}) :app/scripts]))))
+      (swap! state/app-state assoc :app/scripts scripts))))
 
 (defn fetch-url [component url]
   (when-not (string/blank? url)
@@ -157,10 +157,10 @@
   Object
   (render [this]
     (let [props (om/props this)
-          nowplaying (:app/nowplaying props)]
+          {:keys [:app/scripts]} props]
       (ui/view {:style {:flex 1}}
         (ui/scrollable-tab-view {:style {:marginTop 20}
-                                 :onChangeTab #(update-all-script this)}
+                                 :onChangeTab #(update-all-script)}
           (ui/scroll-view {:paddingTop 20
                            :marginBottom 80
                            :tabLabel "RSS"}
@@ -172,6 +172,6 @@
           (ui/scroll-view {:paddingTop 20
                            :marginBottom 80
                            :tabLabel "LIST"}
-                          (script-list-page (:app/scripts props))))
-        (ui/player-item {:url (:speech_url (first (:app/scripts props)))})))))
+                          (script-list-page scripts)))
+        (ui/player-item {:url ""})))))
 
