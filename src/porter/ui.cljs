@@ -24,5 +24,5 @@
 (defn play-stream [url]
   (.play AudioStreaming url (clj->js {:showIniOSMediaCenter true})))
 
-(def logo-img (js/require "./images/cljs.png"))
-
+(defn alert [& body]
+  (.alert (.-Alert ReactNative) (apply str body)))

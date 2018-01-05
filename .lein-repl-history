@@ -137,3 +137,5 @@ quit
 (start-figwheel "ios")
 (clean-builds)
 quit
+(start-figwheel "ios")
+(apply str '("abc" "def"))

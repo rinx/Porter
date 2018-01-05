@@ -20,11 +20,11 @@
     (fn [scripts]
       (om/transact! component `[(scripts/update ~{:scripts scripts}) :app/scripts]))))
 
-(defn submit-url [component url]
+(defn fetch-url [component url]
   (when-not (string/blank? url)
-    #_(om/transact! component `[(urls/add ~{:url url})])
     (request-rss-url url
-      #(http/post-new-script "[FROM iOS App] てすてす" %))))
+      #(ui/alert "Fetched\n"
+                 "Title: " %))))
 
 (defui RSSInputPage
   Object
@@ -46,48 +46,70 @@
                                   :borderRadius 5
                                   :marginRight 10}
                           :onChangeText #(reset! hidden-input %)
-                          :onSubmitEditing #(submit-url this @hidden-input)})
+                          :onSubmitEditing #(fetch-url this @hidden-input)})
           (ui/touchable-highlight {:style {:flex 1
                                            :backgroundColor "#999"
                                            :padding 10
                                            :borderRadius 5}
-                                   :onPress #(submit-url this @hidden-input)}
+                                   :onPress #(fetch-url this @hidden-input)}
             (ui/text {:style {:color "white"
                               :textAlign "center"
                               :fontWeight "bold"}}
-                     "register")))))))
+                     "fetch")))))))
 
 (def rss-input-page (om/factory RSSInputPage))
 
 (defui TextInputPage
   Object
   (render [this]
-    (let [hidden-input (atom "")]
-      (ui/view {:style {:flexDirection "column" :margin 0 :alignItems "center"}}
+    (let [hidden-title-input (atom "")
+          hidden-body-input (atom "")]
+      (ui/view {:style {:flexDirection "column"
+                        :margin 0
+                        :paddingLeft 20
+                        :paddingRight 20
+                        :alignItems "center"}}
         (ui/text {:style {:fontSize 30
                           :fontWeight "100"
                           :marginBottom 20
-                          :textAlign "center"}} "Please input body")
+                          :textAlign "center"}}
+                 "Input title and body")
         (ui/view {:style {:flexDirection "row"
-                          :marginLeft 20
-                          :marginRight 20
                           :marginBottom 20}}
+          (ui/text {:style {:marginRight 10
+                            :padding 10
+                            :textAlign "center"}}
+                   "Title")
           (ui/text-input {:style {:flex 3
                                   :borderColor "gray"
                                   :borderWidth 1
-                                  :borderRadius 5
-                                  :marginRight 10}
-                          :onChangeText #(reset! hidden-input %)
-                          :onSubmitEditing #(submit-url this @hidden-input)})
-          (ui/touchable-highlight {:style {:flex 1
-                                           :backgroundColor "#999"
-                                           :padding 10
-                                           :borderRadius 5}
-                                   :onPress #(submit-url this @hidden-input)}
-            (ui/text {:style {:color "white"
-                              :textAlign "center"
-                              :fontWeight "bold"}}
-                     "register")))))))
+                                  :borderRadius 5}
+                          :onChangeText #(reset! hidden-title-input %)}))
+        (ui/view {:style {:flexDirection "row"
+                          :marginBottom 20}}
+          (ui/text {:style {:marginRight 10
+                            :padding 10
+                            :textAlign "center"}}
+                   "Body")
+          (ui/text-input {:style {:flex 3
+                                  :borderColor "gray"
+                                  :borderWidth 1
+                                  :borderRadius 5}
+                          :onChangeText #(reset! hidden-body-input %)}))
+        (ui/touchable-highlight {:style {:flex 1
+                                         :backgroundColor "#999"
+                                         :padding 10
+                                         :borderRadius 5}
+                                 :onPress #(when-not (or (string/blank? @hidden-title-input)
+                                                         (string/blank? @hidden-body-input))
+                                             (http/post-new-script @hidden-title-input @hidden-body-input)
+                                             (ui/alert "POSTED!\n"
+                                                       "Title: " @hidden-title-input "\n"
+                                                       "Body: " @hidden-body-input))}
+          (ui/text {:style {:color "white"
+                            :textAlign "center"
+                            :fontWeight "bold"}}
+                   "Post"))))))
 
 (def text-input-page (om/factory TextInputPage))
 
@@ -118,13 +140,15 @@
 (defui ScriptListPage
   Object
   (render [this]
-    (let [scripts (om/props this)]
-      (apply ui/scroll-view {:style {:flexDirection "column"
-                                     :marginTop 0
-                                     :marginRight 20
-                                     :marginLeft 20
-                                     :marginBottom 80}}
-             (map script-item scripts)))))
+    (let [scripts (om/props this)
+          scripts' (->> scripts
+                     (sort-by :id)
+                     (reverse))]
+      (apply ui/view {:style {:flexDirection "column"
+                              :marginTop 0
+                              :paddingRight 20
+                              :paddingLeft 20}}
+             (map script-item scripts')))))
 
 (def script-list-page (om/factory ScriptListPage))
 
@@ -140,15 +164,18 @@
       (ui/view {:style {:flex 1}}
         (ui/scrollable-tab-view {:style {:marginTop 20}
                                  :onChangeTab #(update-all-script this)}
-          (ui/view {:paddingTop 20
-                    :tabLabel "RSS"}
-                   (rss-input-page))
-          (ui/view {:paddingTop 20
-                    :tabLabel "TEXT"}
-                   (text-input-page))
-          (ui/view {:paddingTop 20
-                    :tabLabel "LIST"}
-                   (script-list-page (:app/scripts props))))
+          (ui/scroll-view {:paddingTop 20
+                           :marginBottom 80
+                           :tabLabel "RSS"}
+                          (rss-input-page))
+          (ui/scroll-view {:paddingTop 20
+                           :marginBottom 80
+                           :tabLabel "TEXT"}
+                          (text-input-page))
+          (ui/scroll-view {:paddingTop 20
+                           :marginBottom 80
+                           :tabLabel "LIST"}
+                          (script-list-page (:app/scripts props))))
         (ui/player-item {:url (:speech_url (first (:app/scripts props)))})))))
 
 (defonce RootNode (sup/root-node! 1))
